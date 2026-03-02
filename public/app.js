@@ -107,6 +107,17 @@ function appendUserMessage(text) {
   scrollToBottom(true);
 }
 
+const LOADING_QUIPS = [
+  'please be patient, this is running on a mac mini',
+  'asking a computer under a desk, one moment...',
+  'the mac mini is doing its best',
+  'warming up the hamster wheel...',
+  'yes, this is actually running locally. no, the fan is fine',
+  'mac mini: "i got this." (it does not got this)',
+  'converting electricity into words, please hold',
+  'the mac mini appreciates your patience',
+];
+
 function appendAssistantPlaceholder() {
   welcomeEl?.remove();
 
@@ -119,12 +130,18 @@ function appendAssistantPlaceholder() {
   const cursor = document.createElement('span');
   cursor.className = 'cursor';
 
+  const quip = LOADING_QUIPS[Math.floor(Math.random() * LOADING_QUIPS.length)];
+  const loading = document.createElement('span');
+  loading.className = 'loading-quip';
+  loading.textContent = quip;
+
   row.appendChild(bubble);
   row.appendChild(cursor);
+  row.appendChild(loading);
   messagesEl.appendChild(row);
   scrollToBottom(true);
 
-  return { bubble, cursor, row };
+  return { bubble, cursor, row, loading };
 }
 
 /* ── Core send logic ──────────────────────────────────── */
@@ -141,7 +158,7 @@ async function sendMessage() {
   messages.push({ role: 'user', content: text });
   appendUserMessage(text);
 
-  const { bubble, cursor, row } = appendAssistantPlaceholder();
+  const { bubble, cursor, row, loading } = appendAssistantPlaceholder();
   let accumulated = '';
 
   try {
@@ -181,6 +198,7 @@ async function sendMessage() {
           const data = JSON.parse(payload);
           if (data.error) throw new Error(data.error);
           if (data.content) {
+            loading.remove();
             accumulated += data.content;
             // render plain during stream for speed; finalize with markdown
             bubble.textContent = accumulated;
