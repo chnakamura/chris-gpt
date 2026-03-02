@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chris-GPT</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span class="logo-text">Chris-GPT</span>
+      </div>
+      <button class="new-chat-btn" id="new-chat-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        New chat
+      </button>
+      <nav class="conversation-list" id="conversation-list">
+        <!-- populated by JS -->
+      </nav>
+    </aside>
+
+    <!-- Main chat area -->
+    <main class="chat-area">
+
+      <!-- Messages -->
+      <div class="messages" id="messages">
+        <div class="welcome" id="welcome">
+          <h1 class="welcome-title">Chris-GPT</h1>
+          <p class="welcome-subtitle">How can I help you today?</p>
+        </div>
+      </div>
+
+      <!-- Input bar -->
+      <div class="input-bar">
+        <div class="input-wrapper">
+          <textarea
+            id="input"
+            placeholder="Message Chris-GPT..."
+            rows="1"
+            autofocus
+          ></textarea>
+          <div class="input-actions">
+            <button class="action-btn send-btn" id="send-btn" title="Send message" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+              </svg>
+            </button>
+            <button class="action-btn stop-btn" id="stop-btn" title="Stop generating" style="display:none">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="6" width="12" height="12" rx="2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <p class="input-hint">Enter to send &middot; Shift+Enter for new line</p>
+      </div>
+
+    </main>
+  </div>
+</body>
+</html>

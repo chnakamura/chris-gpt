@@ -1,0 +1,21 @@
+# Cloudflare Tunnel config for chris-gpt.com
+#
+# Setup steps (one-time):
+#   1. brew install cloudflare/cloudflare/cloudflared
+#   2. cloudflared tunnel login
+#   3. cloudflared tunnel create chris-gpt
+#      (this prints your TUNNEL_ID — paste it below)
+#   4. cloudflared tunnel route dns chris-gpt chris-gpt.com
+#   5. cloudflared tunnel run --config cloudflared/config.yml chris-gpt
+#
+# Or to run persistently as a macOS service:
+#   sudo cloudflared service install
+#   sudo launchctl start com.cloudflare.cloudflared
+
+tunnel: TUNNEL_ID_HERE
+credentials-file: /Users/chris/.cloudflared/TUNNEL_ID_HERE.json
+
+ingress:
+  - hostname: chris-gpt.com
+    service: http://localhost:3000
+  - service: http_status:404
