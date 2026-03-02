@@ -12,30 +12,56 @@ A personal ChatGPT-style web app powered by a local [Ollama](https://ollama.com)
 - Node.js 18+
 - [Ollama](https://ollama.com) running locally with `qwen3.5:9b` pulled
 - [cloudflared](https://github.com/cloudflare/cloudflared) installed
+- [PM2](https://pm2.keymetrics.io) for process management
 
 ```bash
 brew install ollama
 brew install cloudflare/cloudflare/cloudflared
 ollama pull qwen3.5:9b
+npm install -g pm2
 ```
 
 ---
 
-## Daily startup
+## First-time setup
 
-Open two terminal tabs.
+Run these once to register both services to start automatically on boot.
 
-**Tab 1 — start the app**
+**Node server via PM2**
 ```bash
-npm start
+npm install
+pm2 start server.js --name chris-gpt
+pm2 startup   # run the command it prints
+pm2 save
 ```
 
-**Tab 2 — open the tunnel**
+**Tunnel via launchd**
 ```bash
-cloudflared --config cloudflared/config.yml tunnel run chris-gpt
+cp cloudflared/config.yml ~/.cloudflared/config.yml
+sudo cloudflared service install
+sudo launchctl start com.cloudflare.cloudflared
 ```
 
-Then visit **https://chris-gpt.com** (or http://localhost:3000 locally).
+After this, both services run in the background permanently. No terminals needed. They restart automatically on crash or reboot.
+
+---
+
+## Useful commands
+
+```bash
+# Check if everything is running
+pm2 status
+
+# View app logs
+pm2 logs chris-gpt
+
+# Restart the app (e.g. after code changes)
+pm2 restart chris-gpt
+
+# Stop everything
+pm2 stop chris-gpt
+sudo launchctl stop com.cloudflare.cloudflared
+```
 
 ---
 
@@ -45,33 +71,7 @@ Then visit **https://chris-gpt.com** (or http://localhost:3000 locally).
 npm run dev
 ```
 
-Uses `--watch` so the server restarts automatically on file changes. The tunnel command stays the same.
-
----
-
-## Run automatically on startup (optional)
-
-If you want everything to start when the Mac Mini boots without opening terminals:
-
-**Node server — via PM2**
-```bash
-npm install -g pm2
-pm2 start server.js --name chris-gpt
-pm2 startup   # run the command it prints
-pm2 save
-```
-
-**Tunnel — via launchd service**
-```bash
-sudo cloudflared service install
-sudo launchctl start com.cloudflare.cloudflared
-```
-
-> Note: the launchd service uses `~/.cloudflared/config.yml` by default.
-> Copy the config there if you want it picked up automatically:
-> ```bash
-> cp cloudflared/config.yml ~/.cloudflared/config.yml
-> ```
+Uses `--watch` so the server restarts automatically on file changes. The tunnel can stay running as a service while you develop.
 
 ---
 
@@ -98,6 +98,6 @@ chris-gpt/
 | Problem | Fix |
 |---|---|
 | `Cannot reach Ollama` error in chat | Run `ollama serve` or check it's running on port 11434 |
-| Tunnel won't connect | Make sure `npm start` is running first on port 3000 |
-| Site unreachable externally | Check both terminals are running; verify DNS at dash.cloudflare.com |
+| Site unreachable externally | Run `pm2 status` and check the tunnel: `sudo launchctl list \| grep cloudflare` |
+| Changes not showing | Run `pm2 restart chris-gpt` after editing server files |
 | `flag provided but not defined: -config` | Use `--config` before `tunnel run`: `cloudflared --config ... tunnel run ...` |
