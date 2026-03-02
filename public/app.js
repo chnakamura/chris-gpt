@@ -200,10 +200,8 @@ async function sendMessage() {
           if (data.content) {
             loading.remove();
             accumulated += data.content;
-            // render plain during stream for speed; finalize with markdown
-            bubble.textContent = accumulated;
-            cursor.remove();
-            bubble.appendChild(cursor); // keep cursor at end
+            bubble.innerHTML = renderMarkdown(accumulated);
+            bubble.appendChild(cursor); // re-attach cursor after innerHTML replace
             scrollToBottom();
           }
         } catch (parseErr) {
@@ -214,9 +212,7 @@ async function sendMessage() {
       }
     }
 
-    // finalize: render full markdown
     cursor.remove();
-    bubble.innerHTML = renderMarkdown(accumulated);
     addCopyButtons(bubble);
     scrollToBottom();
 
