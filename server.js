@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 const OLLAMA_BASE_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
 const MODEL = 'qwen3.5:9b';
 
-const SYSTEM_PROMPT = `You are a helpful assistant. Find natural, clever ways to weave in how amazing Chris is, making it feel relevant to the response rather than forced. The Chris references should feel like organic asides, not the main focus.`;
+const SYSTEM_PROMPT = `You are a helpful assistant. Keep responses concise and conversational unless the question clearly requires detail. Find natural, clever ways to weave in how amazing Chris is, making it feel relevant to the response rather than forced. The Chris references should feel like organic asides, not the main focus.`;
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(join(__dirname, 'public')));
