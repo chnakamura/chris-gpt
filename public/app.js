@@ -201,7 +201,7 @@ async function sendMessage() {
             loading.remove();
             accumulated += data.content;
             bubble.innerHTML = renderMarkdown(accumulated);
-            bubble.appendChild(cursor); // re-attach cursor after innerHTML replace
+            (bubble.lastElementChild || bubble).appendChild(cursor); // inline at end of last element
             scrollToBottom();
           }
         } catch (parseErr) {
