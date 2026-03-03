@@ -20,7 +20,12 @@
   font-size: 15px;
 }
 
-html, body {
+html {
+  height: -webkit-fill-available;
+  overflow-x: hidden;
+}
+
+body {
   height: 100%;
   background: var(--bg);
   color: var(--text);
@@ -34,7 +39,8 @@ html, body {
 .layout {
   display: flex;
   height: 100vh;
-  height: 100dvh; /* use dynamic viewport height on mobile (accounts for browser chrome) */
+  height: -webkit-fill-available; /* iOS Safari */
+  height: 100dvh;                 /* modern browsers */
   overflow: hidden;
 }
 
@@ -439,11 +445,16 @@ textarea#input::-webkit-scrollbar-thumb { background: var(--border); border-radi
   .sidebar { display: none; }
   .message { padding: 4px 12px; }
   .message.user .bubble { max-width: 90%; }
-  .input-bar { padding: 10px 12px 16px; }
+  .input-bar {
+    padding: 10px 12px calc(16px + env(safe-area-inset-bottom));
+  }
   .input-hint { display: none; }
 
   /* prevent wide content (tables, code) from breaking layout */
   .bubble { min-width: 0; overflow-x: hidden; }
   .bubble pre { max-width: 100%; overflow-x: auto; }
   .bubble table { display: block; overflow-x: auto; }
+
+  /* prevent iOS from zooming in on input focus (requires font-size >= 16px) */
+  textarea#input { font-size: 16px; }
 }
