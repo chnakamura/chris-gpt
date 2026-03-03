@@ -25,24 +25,39 @@ npm install -g pm2
 
 ## First-time setup
 
-Run these once to register both services to start automatically on boot.
+Run these once. After this, everything starts automatically on boot — no terminals needed.
 
-**Node server via PM2**
+**1. Install dependencies**
 ```bash
 npm install
+```
+
+**2. Register PM2 to start on boot**
+```bash
+pm2 startup   # run the command it prints, then come back
+```
+
+**3. Start the Node server**
+```bash
 pm2 start server.js --name chris-gpt
-pm2 startup   # run the command it prints
+```
+
+**4. Start the Cloudflare tunnel**
+```bash
+pm2 start /opt/homebrew/bin/cloudflared --name tunnel -- --config cloudflared/config.yml tunnel run chris-gpt
+```
+
+**5. Save the process list**
+```bash
 pm2 save
 ```
 
-**Tunnel via launchd**
+**6. Start Ollama on boot**
 ```bash
-cp cloudflared/config.yml ~/.cloudflared/config.yml
-sudo cloudflared service install
-sudo launchctl start com.cloudflare.cloudflared
+brew services start ollama
 ```
 
-After this, both services run in the background permanently. No terminals needed. They restart automatically on crash or reboot.
+All three services (Node server, Cloudflare tunnel, Ollama) will now start automatically on reboot and restart on crash.
 
 ---
 
@@ -55,12 +70,17 @@ pm2 status
 # View app logs
 pm2 logs chris-gpt
 
-# Restart the app (e.g. after code changes)
+# View tunnel logs
+pm2 logs tunnel
+
+# Restart the app (e.g. after code changes to server.js)
 pm2 restart chris-gpt
 
+# Restart the tunnel
+pm2 restart tunnel
+
 # Stop everything
-pm2 stop chris-gpt
-sudo launchctl stop com.cloudflare.cloudflared
+pm2 stop all
 ```
 
 ---
@@ -71,7 +91,7 @@ sudo launchctl stop com.cloudflare.cloudflared
 npm run dev
 ```
 
-Uses `--watch` so the server restarts automatically on file changes. The tunnel can stay running as a service while you develop.
+Uses `--watch` so the server restarts automatically on file changes. The tunnel can stay running via PM2 while you develop.
 
 ---
 
@@ -97,7 +117,7 @@ chris-gpt/
 
 | Problem | Fix |
 |---|---|
-| `Cannot reach Ollama` error in chat | Run `ollama serve` or check it's running on port 11434 |
-| Site unreachable externally | Run `pm2 status` and check the tunnel: `sudo launchctl list \| grep cloudflare` |
-| Changes not showing | Run `pm2 restart chris-gpt` after editing server files |
-| `flag provided but not defined: -config` | Use `--config` before `tunnel run`: `cloudflared --config ... tunnel run ...` |
+| `Cannot reach Ollama` error in chat | Run `brew services start ollama` |
+| Site unreachable externally | Run `pm2 status` — check both `chris-gpt` and `tunnel` are online |
+| Changes not showing | Run `pm2 restart chris-gpt` after editing `server.js` |
+| Tunnel keeps restarting | Run `pm2 logs tunnel` to see the error |
