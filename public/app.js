@@ -149,6 +149,9 @@ function appendAssistantPlaceholder() {
   const row = document.createElement('div');
   row.className = 'message assistant';
 
+  const searchPill = document.createElement('div');
+  searchPill.className = 'search-pill hidden';
+
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
 
@@ -160,13 +163,14 @@ function appendAssistantPlaceholder() {
   loading.className = 'loading-quip';
   loading.textContent = quip;
 
+  row.appendChild(searchPill);
   row.appendChild(bubble);
   row.appendChild(cursor);
   row.appendChild(loading);
   messagesEl.appendChild(row);
   scrollToBottom(true);
 
-  return { bubble, cursor, row, loading };
+  return { bubble, cursor, row, loading, searchPill };
 }
 
 /* ── Core send logic ──────────────────────────────────── */
@@ -183,7 +187,7 @@ async function sendMessage() {
   messages.push({ role: 'user', content: text });
   appendUserMessage(text);
 
-  const { bubble, cursor, row, loading } = appendAssistantPlaceholder();
+  const { bubble, cursor, row, loading, searchPill } = appendAssistantPlaceholder();
   let accumulated = '';
 
   try {
@@ -233,6 +237,31 @@ async function sendMessage() {
         try {
           const data = JSON.parse(payload);
           if (data.error) throw new Error(data.error);
+          if (data.status === 'searching') {
+            loading.remove();
+            searchPill.classList.remove('hidden');
+            searchPill.innerHTML = `
+              <span class="search-pill-spinner"></span>
+              <span class="search-pill-label">Searching for "<em>${escapeHtml(data.query)}</em>"</span>
+            `;
+          }
+          if (data.status === 'search_done') {
+            searchPill.innerHTML = `
+              <div class="search-pill-header">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                Searched the web
+              </div>
+              <div class="search-sources">
+                ${(data.sources || []).map(s => {
+                  const domain = (() => { try { return new URL(s.url).hostname; } catch { return ''; } })();
+                  return `<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener" class="source-link">
+                    <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=16" width="14" height="14" onerror="this.style.display='none'">
+                    <span>${escapeHtml(s.title)}</span>
+                  </a>`;
+                }).join('')}
+              </div>
+            `;
+          }
           if (data.content) {
             loading.remove();
             accumulated += data.content;

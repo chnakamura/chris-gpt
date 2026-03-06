@@ -3,6 +3,7 @@
 A personal ChatGPT-style web app powered by a local [Ollama](https://ollama.com) instance, served publicly via Cloudflare Tunnel.
 
 - Model: `qwen3.5:9b` running locally on the Mac Mini
+- Web search via [Brave Search API](https://brave.com/search/api/) (optional, set `BRAVE_API_KEY`)
 - Live at: https://chris-gpt.com
 
 ---
@@ -13,6 +14,7 @@ A personal ChatGPT-style web app powered by a local [Ollama](https://ollama.com)
 - [Ollama](https://ollama.com) running locally with `qwen3.5:9b` pulled
 - [cloudflared](https://github.com/cloudflare/cloudflared) installed
 - [PM2](https://pm2.keymetrics.io) for process management
+- (Optional) Brave Search API key for web search
 
 ```bash
 brew install ollama
@@ -111,6 +113,16 @@ chris-gpt/
 
 **The system prompt lives in `server.js` only** and is never sent to the browser.
 
+### Environment variables
+
+Create a `.env` file in the project root (gitignored):
+
+```
+BRAVE_API_KEY=your_key_here   # enables web search tool
+OLLAMA_URL=http://localhost:11434  # optional, this is the default
+PORT=3000                          # optional, this is the default
+```
+
 ---
 
 ## Troubleshooting
@@ -121,3 +133,4 @@ chris-gpt/
 | Site unreachable externally | Run `pm2 status` — check both `chris-gpt` and `tunnel` are online |
 | Changes not showing | Run `pm2 restart chris-gpt` after editing `server.js` |
 | Tunnel keeps restarting | Run `pm2 logs tunnel` to see the error |
+| Web search not working | Check `BRAVE_API_KEY` is set in `.env` and usage limit isn't exceeded |
