@@ -15,14 +15,22 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.static(join(__dirname, 'public')));
 
 app.post('/api/chat', async (req, res) => {
-  const { messages } = req.body;
+  const { messages, context } = req.body;
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'messages must be a non-empty array' });
   }
 
+  let contextStr = '';
+  if (context?.time || context?.location) {
+    const parts = [];
+    if (context.time)     parts.push(`The current date and time is ${context.time}.`);
+    if (context.location) parts.push(`The user is located in ${context.location}.`);
+    contextStr = '\n\n[Context: ' + parts.join(' ') + ']';
+  }
+
   const fullMessages = [
-    { role: 'system', content: SYSTEM_PROMPT },
+    { role: 'system', content: SYSTEM_PROMPT + contextStr },
     ...messages,
   ];
 

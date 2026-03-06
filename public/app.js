@@ -2,6 +2,31 @@
 let messages = [];           // [{role, content}] — user/assistant only
 let isGenerating = false;
 let abortController = null;
+let userLocation = null;     // cached city string after first geolocation
+let locationRequested = false;
+
+/* ── Location ─────────────────────────────────────────── */
+async function requestLocation() {
+  if (locationRequested) return;
+  locationRequested = true;
+  if (!navigator.geolocation) return;
+  try {
+    const pos = await new Promise((resolve, reject) =>
+      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
+    );
+    const { latitude, longitude } = pos.coords;
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+      { headers: { 'Accept-Language': 'en' } }
+    );
+    const data = await res.json();
+    const a = data.address;
+    userLocation = [a.city || a.town || a.village || a.county, a.state, a.country]
+      .filter(Boolean).join(', ');
+  } catch {
+    // denied or unavailable — fine, we just won't send location
+  }
+}
 
 /* ── DOM refs ─────────────────────────────────────────── */
 const messagesEl   = document.getElementById('messages');
@@ -164,10 +189,21 @@ async function sendMessage() {
   try {
     abortController = new AbortController();
 
+    // get location on first message (no-op after that)
+    await requestLocation();
+
+    const context = {
+      time: new Date().toLocaleString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long',
+        day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
+      }),
+      location: userLocation,
+    };
+
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ messages, context }),
       signal: abortController.signal,
     });
 
